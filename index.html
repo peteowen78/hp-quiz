@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Harry Potter Quiz — All 7 Books</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Georgia,serif;background:#1a1a2e;color:#eee;padding:20px}
+  .screen{max-width:720px;margin:0 auto;display:none}
+  .screen.active{display:block}
+  h1{color:#d4af37;text-align:center;font-size:1.8em;margin-bottom:6px}
+  .subtitle{text-align:center;color:#aaa;font-style:italic;margin-bottom:24px}
+  .level-badge{display:inline-block;padding:4px 14px;border-radius:20px;font-size:.85em;font-weight:bold;margin-bottom:16px}
+  .l1 .level-badge{background:#2e7d32}
+  .l2 .level-badge{background:#e65100}
+  .l3 .level-badge{background:#880e4f}
+  .q{background:#16213e;margin:14px 0;padding:14px;border-radius:8px;border-left:4px solid #d4af37}
+  .q p{font-weight:bold;margin-bottom:10px;line-height:1.4}
+  .opt{display:block;margin:5px 0;padding:8px 10px;border-radius:4px;cursor:pointer;transition:background .15s;line-height:1.4}
+  .opt:hover{background:#0f3460}
+  .opt input{margin-right:8px}
+  .correct{background:#2e7d32!important}
+  .incorrect{background:#c62828!important}
+  .btn{display:block;margin:24px auto 0;padding:12px 32px;font-size:1em;background:#d4af37;color:#1a1a2e;font-weight:bold;border:none;border-radius:6px;cursor:pointer}
+  .btn:hover{background:#c9a227}
+  .result-box{text-align:center;padding:30px 20px}
+  .result-box .score{font-size:2.5em;color:#d4af37;margin:16px 0}
+  .result-box p{color:#ccc;margin:8px 0}
+  .pass{color:#7cb342}
+  .fail{color:#ef5350}
+  #intro{text-align:center;padding:40px 20px}
+  #intro h1{font-size:2.2em;margin-bottom:10px}
+  #intro .rules{background:#16213e;border-radius:10px;padding:20px;margin:24px 0;text-align:left}
+  #intro .rules li{margin:8px 0;line-height:1.6}
+  .progress{text-align:right;color:#aaa;font-size:.85em;margin-bottom:4px}
+</style>
+</head>
+<body>
+
+<div id="intro" class="screen active">
+  <h1>⚡ Harry Potter Quiz ⚡</h1>
+  <p class="subtitle">All Seven Books · Three Levels · 50 Questions Each</p>
+  <div class="rules">
+    <ul style="padding-left:18px">
+      <li>Three levels: <strong>Easy → Medium → Hard</strong></li>
+      <li>You must score <strong>48 out of 50</strong> to unlock the next level</li>
+      <li>All questions are based on the <strong>books</strong>, not the films</li>
+      <li>Answers are revealed after you submit — no cheating!</li>
+    </ul>
+  </div>
+  <button class="btn" onclick="startLevel(0)">Start Level 1 — Easy</button>
+</div>
+
+<div id="level0" class="screen l1">
+  <h1>⚡ Harry Potter Quiz ⚡</h1>
+  <span class="level-badge">Level 1 — Easy</span>
+  <p class="subtitle">Books 1–7 · The Basics</p>
+  <div class="progress" id="p0"></div>
+  <form id="q0"></form>
+  <button class="btn" onclick="grade(0)">Submit Answers</button>
+  <div id="r0" class="result-box" style="display:none"></div>
+</div>
+
+<div id="level1" class="screen l2">
+  <h1>⚡ Harry Potter Quiz ⚡</h1>
+  <span class="level-badge">Level 2 — Medium</span>
+  <p class="subtitle">Books 1–7 · Getting Trickier</p>
+  <div class="progress" id="p1"></div>
+  <form id="q1"></form>
+  <button class="btn" onclick="grade(1)">Submit Answers</button>
+  <div id="r1" class="result-box" style="display:none"></div>
+</div>
+
+<div id="level2" class="screen l3">
+  <h1>⚡ Harry Potter Quiz ⚡</h1>
+  <span class="level-badge">Level 3 — Hard</span>
+  <p class="subtitle">Books 1–7 · For True Fans Only</p>
+  <div class="progress" id="p2"></div>
+  <form id="q2"></form>
+  <button class="btn" onclick="grade(2)">Submit Answers</button>
+  <div id="r2" class="result-box" style="display:none"></div>
+</div>
+
+<div id="complete" class="screen">
+  <div class="result-box">
+    <h1>⚡ Quiz Complete! ⚡</h1>
+    <p class="score" style="font-size:1.4em">You conquered all three levels.</p>
+    <p style="color:#d4af37;margin-top:20px;font-size:1.1em">A true Potterhead. Dumbledore would be proud.</p>
+    <button class="btn" onclick="location.reload()">Play Again</button>
+  </div>
+</div>
+
+<script>
+const levels = [
+// ── LEVEL 1 — EASY ─────────────────────────────────────────────────────────
+[
+["What is Harry Potter's middle name?",["James","Peter","Albus","Sirius"],0],
+["What platform does the Hogwarts Express depart from?",["Platform 10","Platform 9¾","Platform 8½","Platform 12¼"],1],
+["Who kills Albus Dumbledore?",["Voldemort","Bellatrix Lestrange","Draco Malfoy","Severus Snape"],3],
+["What are the three Deathly Hallows?",["Elder Wand, Resurrection Stone, Invisibility Cloak","Elder Wand, Time-Turner, Invisibility Cloak","Philosopher's Stone, Resurrection Stone, Elder Wand","Elder Wand, Sorting Hat, Invisibility Cloak"],0],
+["What is a Horcrux?",["A dark potion that grants immortality","An object containing a fragment of a soul","A type of dark curse","A contract with Death"],1],
+["How many Horcruxes does Voldemort create in total (including the accidental one)?",["5","6","7","8"],2],
+["Who is the Half-Blood Prince?",["Dumbledore","Voldemort","Sirius Black","Severus Snape"],3],
+["What is the name of Voldemort's snake?",["Basilisk","Nagini","Norberta","Fang"],1],
+["Who teaches Defence Against the Dark Arts in Order of the Phoenix?",["Remus Lupin","Mad-Eye Moody","Dolores Umbridge","Gilderoy Lockhart"],2],
+["Which Weasley twin dies in the Battle of Hogwarts?",["George","Percy","Charlie","Fred"],3],
+["What does the Resurrection Stone allow the user to do?",["Bring the dead permanently back to life","Speak to the dead","Become immortal","See visions of the future"],1],
+["What is the name of Harry's owl?",["Pigwidgeon","Errol","Hedwig","Hermes"],2],
+["Who is Harry Potter's godfather?",["Remus Lupin","Peter Pettigrew","Albus Dumbledore","Sirius Black"],3],
+["What creature is Buckbeak?",["A Griffin","A Thestral","A Hippogriff","A Dragon"],2],
+["What is the name of Hermione's cat?",["Mrs Norris","Crookshanks","Scabbers","Pigwidgeon"],1],
+["What is the name of the Weasley family home?",["The Hollow","The Burrow","The Nest","The Roost"],1],
+["What is Voldemort's real name?",["Tom Marvolo Riddle","Thomas Alfred Riddle","Tom Marvolo Prince","Thomas Marvolo Slytherin"],0],
+["What does Harry use to destroy Tom Riddle's diary Horcrux?",["The Sword of Gryffindor","Fiendfyre","A basilisk fang","Avada Kedavra"],2],
+["What is the name of the wizarding world's main newspaper?",["The Quibbler","Witch Weekly","The Daily Prophet","The Evening Owl"],2],
+["What is the minimum age to enter the Triwizard Tournament?",["15","16","17","18"],2],
+["Which of these is a correct list of the four Hogwarts houses?",["Gryffindor, Slytherin, Ravenclaw, Badgerpuff","Gryffindor, Serpentine, Ravenclaw, Hufflepuff","Gryffindor, Slytherin, Ravenclaw, Hufflepuff","Lionheart, Slytherin, Ravenclaw, Hufflepuff"],2],
+["What does the spell Alohomora do?",["Levitates objects","Produces light","Unlocks doors","Creates fire"],2],
+["Who is the Divination teacher at Hogwarts?",["Professor Sprout","Professor Sinistra","Professor Vector","Professor Trelawney"],3],
+["What is the name of Neville Longbottom's toad?",["Thomas","Timothy","Trevor","Toby"],2],
+["What Quidditch position does Harry play?",["Keeper","Beater","Chaser","Seeker"],3],
+["Who gives Harry his first broomstick, a Nimbus 2000?",["Dumbledore","Hagrid","Professor McGonagall","Oliver Wood"],2],
+["What is the incantation for the Disarming Spell?",["Stupefy","Expelliarmus","Impedimenta","Accio"],1],
+["Who teaches Defence Against the Dark Arts in Philosopher's Stone?",["Snape","Professor Quirrell","Lockhart","Lupin"],1],
+["How was Dobby freed from the Malfoy family?",["Harry gave Dobby a galleon","Harry tricked Lucius Malfoy into giving Dobby a sock","Dumbledore signed Dobby's freedom papers","Dobby stole a wand and freed himself"],1],
+["Who becomes headmaster of Hogwarts in Deathly Hallows while under Voldemort's control?",["Professor McGonagall","Dolores Umbridge","Severus Snape","Horace Slughorn"],2],
+["What does the spell Lumos do?",["Unlocks doors","Creates a jet of water","Produces light from a wand tip","Levitates objects"],2],
+["What is the name of the wizarding prison?",["Nurmengard","The Tower","Azkaban","Alcatraz Magica"],2],
+["Where does Harry buy his wand?",["Flourish and Blotts","Madam Malkin's","Borgin and Burkes","Ollivanders"],3],
+["What is the name of Dumbledore's brother?",["Ariana","Alastor","Aurelius","Aberforth"],3],
+["What form does Harry's Patronus take?",["A doe","A wolf","A stag","A phoenix"],2],
+["What famous dark wizard did Dumbledore defeat in 1945?",["Morgana","Grindelwald","Salazar","Merlin"],1],
+["Who is considered Voldemort's most loyal Death Eater?",["Peter Pettigrew","Lucius Malfoy","Bellatrix Lestrange","Draco Malfoy"],2],
+["What does S.P.E.W. stand for?",["Society for the Protection of Elf Welfare","Special Protection of Elfish Wizardry","Society for the Promotion of Elfish Welfare","Sorcerers' Plan for Elfish Work"],2],
+["What does the spell Stupefy do?",["Causes extreme pain","Kills instantly","Stuns the target","Disarms the target"],2],
+["Who teaches Transfiguration at Hogwarts?",["Professor Sprout","Professor McGonagall","Professor Flitwick","Professor Slughorn"],1],
+["Which Hogsmeade pub is known for serving butterbeer?",["The Hog's Head","The Leaky Cauldron","The Three Broomsticks","The Stumbling Seeker"],2],
+["What name does Hagrid give the Norwegian Ridgeback dragon he hatches in Philosopher's Stone?",["Norberta","Fang","Buckbeak","Norbert"],3],
+["What does Neville Longbottom use to kill Nagini in Deathly Hallows?",["A basilisk fang","A wand curse","The Sword of Gryffindor","Fiendfyre"],2],
+["What is the name of Luna Lovegood's father?",["Cornelius","Aberforth","Xenophilius","Thaddeus"],2],
+["Who does Harry Potter marry?",["Cho Chang","Luna Lovegood","Hermione Granger","Ginny Weasley"],3],
+["Who does Ron Weasley marry?",["Lavender Brown","Luna Lovegood","Hermione Granger","Fleur Delacour"],2],
+["What does Dumbledore's will leave to Ron?",["A Golden Snitch","The Tales of Beedle the Bard","The Sword of Gryffindor","The Deluminator"],3],
+["What magical object is used to view others' memories?",["A Remembrall","A Reverse Mirror","A Pensieve","A Memory Jar"],2],
+["What is the name of Harry and Ginny's youngest son?",["James Sirius","Lily Luna","Hugo","Albus Severus"],3],
+["What is the name of the magical map of Hogwarts?",["The Hogwarts Map","The Weasley Map","The Prankster's Map","The Marauder's Map"],3],
+],
+// ── LEVEL 2 — MEDIUM ────────────────────────────────────────────────────────
+[
+["Which Horcrux was hidden in the Lestrange vault at Gringotts?",["Rowena Ravenclaw's diadem","Salazar Slytherin's locket","Tom Riddle's diary","Helga Hufflepuff's cup"],3],
+["Who kills Sirius Black?",["Lucius Malfoy","Peter Pettigrew","Bellatrix Lestrange","Voldemort"],2],
+["What is the incantation to conjure the Dark Mark?",["Obscuro","Tenebrus","Mortis","Morsmordre"],3],
+["What does R.A.B. stand for (the person who stole the locket Horcrux)?",["Rastaban Antonin Blishwick","Rodolphus Augustus Belby","Regulus Arcturus Black","Rubeus Anselm Brody"],2],
+["What is the incantation for Snape's invented spell that slashes the target?",["Diffindo","Vulnera Sanentur","Lacero","Sectumsempra"],3],
+["What is the name of the magical room that provides whatever the seeker needs?",["The Hidden Chamber","The Come and Go Room / Room of Requirement","The Vanishing Room","The Forbidden Chamber"],1],
+["Who kills Bellatrix Lestrange?",["Harry Potter","Hermione Granger","Neville Longbottom","Molly Weasley"],3],
+["What form does Dumbledore's Patronus take?",["A silver cat","A stag","A Phoenix","A wolf"],2],
+["What object destroys Dumbledore's right hand when he puts it on?",["The Slytherin locket","The Hufflepuff cup","Marvolo Gaunt's ring (a Horcrux)","The Elder Wand"],2],
+["Where was Rowena Ravenclaw's diadem hidden before Harry found it?",["In the Lestrange vault","In Albania","In the Chamber of Secrets","In the Room of Requirement at Hogwarts"],3],
+["What form does Snape's Patronus take, and why is it significant?",["A doe — the same as Lily Potter's Patronus","A stag — to mirror Harry's","A silver wolf — representing his hidden loyalty","A phoenix — representing Dumbledore's trust"],0],
+["Who originally owned the Invisibility Cloak before it passed down to Harry?",["James Potter received it directly from Dumbledore","Albus Dumbledore","Ignotus Peverell, passed down through generations","Death himself"],2],
+["What single word does Snape say when asked by Dumbledore how much he still cares for Lily?",["Forever","Always","Eternally","Never"],1],
+["Where does Harry find the Sword of Gryffindor in Deathly Hallows?",["In Dumbledore's office","In the Room of Requirement","In the Gringotts vault","At the bottom of a frozen pool in the Forest of Dean"],3],
+["What does Hermione do to her parents before the trio go on the run in Deathly Hallows?",["She sends them to stay with relatives","She hides them at Grimmauld Place","She erases their memories and sends them to Australia","They go into hiding voluntarily"],2],
+["Which centaur takes over Divination classes after Umbridge sacks Trelawney?",["Bane","Ronan","Magorian","Firenze"],3],
+["How does the Elder Wand's allegiance pass to Harry?",["Dumbledore wills it to him","Voldemort kills Snape and takes it","Harry wins it when Voldemort dies","Harry disarms Draco Malfoy, who had disarmed Dumbledore"],3],
+["How does Voldemort ultimately die?",["Harry casts Avada Kedavra","Neville kills him with the Sword","His own rebounding Killing Curse kills him when Harry's Expelliarmus clashes with it","Snape poisons him"],2],
+["What is Dumbledore's full name?",["Albus Brian Wulfric Dumbledore","Albus Percival Brian Wulfric Dumbledore","Albus Percival Wulfric Brian Dumbledore","Albus Wulfric Percival Brian Dumbledore"],2],
+["What does Dumbledore leave Hermione in his will?",["A Sneakoscope","The Sword of Gryffindor","A Golden Snitch","The Tales of Beedle the Bard"],3],
+["Which part of the prophecy does Voldemort hear — and what crucial part does he miss?",["He hears all of it","He hears only the first half (about the child born as the seventh month dies)","He hears none of it — a spy relays it","He hears the last line only"],1],
+["What does the prophecy about Harry and Voldemort ultimately say?",["He must die at Voldemort's hand alone","Only one can truly live while the other survives — neither can live while the other survives","He will destroy all Horcruxes and thus kill Voldemort","He must seek out Voldemort and challenge him"],1],
+["Who is the Grey Lady, ghost of Ravenclaw Tower?",["Rowena Ravenclaw herself","Rowena Ravenclaw's sister","Helena Ravenclaw, Rowena's daughter","A student who died searching for the diadem"],2],
+["What is the address of the Order of the Phoenix's headquarters?",["13 Grimmauld Place","14 Grimmauld Place","12 Grimmauld Place","11 Grimmauld Place"],2],
+["What role does Harry take on in Gryffindor Quidditch in Half-Blood Prince?",["He becomes a Chaser","He is dropped from the team","He becomes team captain","He becomes Keeper"],2],
+["What creatures pull the carriages to Hogwarts that only some students can see?",["Hippogriffs","Centaurs","Unicorns","Thestrals"],3],
+["Why can Harry see the Thestrals from Order of the Phoenix onwards but not before?",["He is now old enough","His magical power has grown","He witnessed Cedric Diggory's death","Dumbledore revealed them to him"],2],
+["What is the name of the Potions teacher who replaces Snape in Half-Blood Prince?",["Slughorn","Sprout","Flitwick","Phineas Nigellus"],0],
+["Who teaches Defence Against the Dark Arts in Half-Blood Prince?",["Dolores Umbridge","Professor Slughorn","Mad-Eye Moody","Severus Snape"],3],
+["Who destroys the Slytherin locket Horcrux, and what does he use?",["Harry, using a basilisk fang","Hermione, using the Sword of Gryffindor","Ron, using the Sword of Gryffindor","Dumbledore had already begun destroying it"],2],
+["Who destroys the Hufflepuff cup Horcrux, and where?",["Harry, in the Room of Requirement","Hermione, in the Chamber of Secrets using a basilisk fang","Ron, in the Chamber of Secrets","Neville, in the Battle of Hogwarts"],1],
+["What are the names of Harry and Ginny's three children?",["James Albus, Harry Junior, Lily Luna","James Sirius, Albus Severus, and Lily Luna","Sirius James, Albus Fred, and Lily Ginny","Neville, Albus, and Lily"],1],
+["What makes Harry himself an accidental Horcrux?",["Dumbledore deliberately planted a soul fragment in him","When Voldemort's Killing Curse rebounded, a fragment of his soul latched onto the only living thing in the room","Lily's sacrifice transferred Voldemort's soul to Harry","Harry drank a potion that fused their souls"],1],
+["What does the Sword of Gryffindor absorb that makes it capable of destroying Horcruxes?",["Phoenix tears","Dragon fire","Basilisk venom","Fiendfyre"],2],
+["What is the name of the village where Harry was born and his parents are buried?",["Tinworth","Ottery St Catchpole","Hogsmeade","Godric's Hollow"],3],
+["What does the Boggart become for Molly Weasley in Order of the Phoenix?",["Voldemort","Dead members of her family one after another","A Dementor","Arthur Weasley disfigured"],1],
+["What is written on the tombstone of Lily and James Potter?",["'Beloved parents, taken too soon'","'The last enemy that shall be destroyed is death'","'We will never forget'","'Fallen but not forgotten'"],1],
+["What is written on the Dumbledore family tombstone?",["'The last enemy that shall be destroyed is death'","'Always in our hearts'","'Where your treasure is, there will your heart be also'","'Sacrificed for the greater good'"],2],
+["How does Harry survive Voldemort's Killing Curse in the Forbidden Forest in Deathly Hallows?",["Lily's sacrifice protects him again","Because he is a Horcrux, the Horcrux part dies but Harry survives","The Elder Wand refuses to kill its true master, so only the Horcrux within Harry is destroyed","He uses a Shield Charm without knowing it"],2],
+["What does Harry do with the Elder Wand at the end of Deathly Hallows?",["He keeps it as his primary wand","He gives it to McGonagall","He destroys it by snapping it in half and throwing it away","He uses it to repair his original wand, then returns it to Dumbledore's tomb"],3],
+["What was Voldemort's plan for his seventh Horcrux — the one he never intentionally made?",["To use Nagini","To use Harry's death at Godric's Hollow to make his final Horcrux — but the rebounding curse made Harry the Horcrux instead","To use Dumbledore's death","To use a Ministry official"],1],
+["Who is Bill Weasley's wife?",["Tonks","Angelina Johnson","Fleur Delacour","Cho Chang"],2],
+["What is the name of the spell Snape invented that fills nearby ears with an unidentifiable buzzing?",["Silencio","Muffliato","Quietus","Sonorus"],1],
+["What is the incantation that reverses Sectumsempra?",["Episkey","Reparo","Ferula","Vulnera Sanentur"],3],
+["What wandless, non-verbal magic does Harry accidentally perform in Philosopher's Stone that first reveals his powers?",["He makes a flower bloom","He turns his teacher's wig blue","He levitates a book","Various acts of accidental magic — including regrowing his hair after Aunt Petunia cut it"],3],
+["What is the Hogwarts motto, and what does it translate to?",["'Draco Dormiens Nunquam Titillandus' — Never tickle a sleeping dragon","'Semper Vigirans' — Always watchful","'Fortis et Fidelis' — Strong and faithful","'Nunquam Deficio' — Never give up"],0],
+["In which year was Tom Riddle born?",["1928","1926","1930","1920"],1],
+["What is the name of Aberforth Dumbledore's pub in Hogsmeade?",["The Three Broomsticks","The Leaky Cauldron","The Hog's Head","The Hanged Man"],2],
+["What does Voldemort fear above all else?",["Dumbledore","Pain","Love","Death"],3],
+["What is the name of the goblin who helps Harry break into Gringotts in Deathly Hallows?",["Hooktooth","Gnarlak","Ragnok","Griphook"],3],
+["What incantation does Harry use in his final duel with Voldemort?",["Avada Kedavra","Stupefy","Expecto Patronum","Expelliarmus"],3],
+],
+// ── LEVEL 3 — HARD ──────────────────────────────────────────────────────────
+[
+["What are the first names of the three Peverell brothers (in the correct order: eldest to youngest)?",["Albus, Aberforth and Ariana","Cadmus, Antioch and Ignotus","Antioch, Cadmus and Ignotus","Ignotus, Cadmus and Antioch"],2],
+["From whom did Grindelwald steal the Elder Wand?",["Antioch Peverell","Dumbledore","Nicolas Flamel","Gregorovitch"],3],
+["What is the tone and content of R.A.B.'s note found inside the fake locket Horcrux?",["A mocking note with no explanation — just 'I took it'","A simple 'The Horcrux has been moved to Gringotts'","A defiant message saying they discovered Voldemort's secret, stole the Horcrux, and intend to destroy it","A warning to other Death Eaters"],2],
+["What is the name of the wizarding prison where Grindelwald was imprisoned after his defeat?",["Azkaban","The Citadel","The Black Fort","Nurmengard"],3],
+["Where did teenage Dumbledore and Grindelwald meet?",["Hogsmeade","Durmstrang","Diagon Alley","Godric's Hollow — Grindelwald was visiting his great-aunt Bathilda Bagshot"],3],
+["What book is Bathilda Bagshot famous for writing?",["Fantastic Beasts and Where to Find Them","Magical Theory","The Rise and Fall of the Dark Arts","A History of Magic"],3],
+["What is Grindelwald's ideology's motto?",["'Magic is Might'","'Death to Muggles'","'For the Greater Good'","'Pure Blood Above All'"],2],
+["Who kills Grindelwald, and why?",["Dumbledore kills him during their famous 1945 duel","He dies of old age in Nurmengard","Aurors storm Nurmengard and kill him","Voldemort kills him when he refuses to reveal the Elder Wand's location"],3],
+["What does the Tale of the Three Brothers say happened to the eldest brother (and his Hallow)?",["He was visited by Death in his sleep and gave up his soul willingly","He won many duels with the Elder Wand but was murdered in his sleep, and Death took his soul","He was defeated in a duel and lost the wand","He hid the wand and outlived his enemies"],1],
+["What does the second Peverell brother use the Resurrection Stone for, and what is the outcome?",["He brings back a loved one who is happy and at peace","He brings back a lost love who is cold and distant; tormented, he eventually kills himself","He tries to bring back his mother but fails","He uses it to speak to his father for guidance"],1],
+["What is the full name of Voldemort's maternal grandfather?",["Morfin Gaunt","Slytherin himself","Tom Riddle Sr","Marvolo Gaunt"],3],
+["What is the name of Voldemort's mother?",["Morfina Gaunt","Rowena Riddle","Bellatrix Gaunt","Merope Gaunt"],3],
+["What does the spell Homenum Revelio do?",["Reveals hidden writing","Detects concealed objects","Reveals the presence of humans","Makes invisible ink appear"],2],
+["What does the Fidelius Charm specifically do?",["Creates an unbreakable magical barrier","Makes the caster and their allies invisible","Conceals a secret inside a living soul — it cannot be revealed unless the Secret-Keeper chooses","Binds two people's fates together"],2],
+["Who was the Secret-Keeper for Lily and James Potter, and who did Sirius suggest it should be instead?",["Sirius was the Secret-Keeper; he suggested Remus instead","Peter Pettigrew was the Secret-Keeper; Sirius suggested himself but switched to Peter as a decoy","Dumbledore was the Secret-Keeper; Sirius demanded the role","James was his own Secret-Keeper; Dumbledore overrode him"],1],
+["What is the incantation of the Counter-Curse Snape uses to heal Sectumsempra wounds?",["Episkey","Ferula","Vulnera Sanentur","Reparo"],2],
+["What is written on the wall at Hogwarts after Mrs Norris is found Petrified?",["'The Heir of Slytherin has returned. Mudbloods beware.'","'The Chamber of Secrets has been opened. Enemies of the Heir, beware.'","'Slytherin's monster walks again. All shall suffer.'","'Beware the Heir of Slytherin. The Chamber is open.'"],1],
+["What does NEWT stand for?",["Notably Exceptional Wizarding Trials","National Examination Wizarding Tests","Nastily Exhausting Wizarding Tests","Nasty Exceptional Wizarding Titles"],2],
+["What does OWL stand for?",["Outstanding Wizarding Level","Official Wizard's Learning","Optional Wizarding Level","Ordinary Wizarding Level"],3],
+["What form does Hermione's Boggart take in Prisoner of Azkaban?",["Voldemort","Losing Ron Weasley","Professor McGonagall telling her she has failed all her exams","A Dementor"],2],
+["What is the incantation for the Memory Charm that erases memories?",["Lethe","Amnesio","Obliviate","Memorexio"],2],
+["What country did Voldemort hide in between his first and second rise?",["Bulgaria","Romania","Germany","Albania"],3],
+["What does Dumbledore use to immobilise Harry non-verbally on the Astronomy Tower in Half-Blood Prince?",["He uses a wordless, invisible Full Body-Bind (Petrificus Totalus)","He casts Stupefy silently","He uses Incarcerous","He casts Impedimenta"],0],
+["What is the name of Hagrid's half-brother, a young giant?",["Finn","Brutus","Maximus","Grawp"],3],
+["What are the last words Snape says to Harry before dying?",["'Tell them I was brave'","'Always'","'You have your mother's eyes'","'Look… at… me…'"],3],
+["What does Harry discover is different about his copy of Advanced Potion-Making in Half-Blood Prince?",["It is a first edition worth thousands of Galleons","It contains hidden Horcrux instructions in a false back cover","It is covered in handwritten notes, invented spells and improvements by its previous owner","It is magically enlarged to contain secret extra chapters"],2],
+["In what order are the Horcruxes destroyed throughout the series?",["Diary → Ring → Locket → Cup → Diadem → Harry (Horcrux within) → Nagini","Ring → Diary → Locket → Cup → Diadem → Nagini → Harry","Diary → Locket → Ring → Cup → Diadem → Harry → Nagini","Diary → Ring → Locket → Diadem → Cup → Harry → Nagini"],0],
+["What spell does Crabbe accidentally cast in the Room of Requirement in Deathly Hallows, which destroys the diadem Horcrux?",["Avada Kedavra","Incendio","Sectumsempra","Fiendfyre"],3],
+["What is the incantation that produces an unbreakable magical vow between two parties?",["'Vinculum Perpetuum'","No spoken incantation is given — the Bonder's wand produces the magic automatically","'Votum Inrumpibile'","'Promissio Aeterna'"],1],
+["Who killed Voldemort's father, Tom Riddle Sr, and how did they avoid punishment?",["Voldemort himself — he framed his uncle Morfin Gaunt with false memories","Morfin Gaunt killed him in a rage — he was caught and imprisoned","Voldemort killed him and fled to Albania","Bellatrix Lestrange killed him on Voldemort's behalf"],0],
+["What is the specific thing the Sorting Hat considers placing Harry in, and what tips it toward Gryffindor?",["Hufflepuff — but his cleverness tips it","Ravenclaw — but his loyalty tips it","Slytherin — but Harry's strong desire not to be there tips it toward Gryffindor","It considers all four houses equally"],2],
+["What must Harry do to open the entrance to the sea cave in Half-Blood Prince?",["Say a Parseltongue password","Find a hidden key","Pay with blood — cut his hand and smear it on the rock","Use the Elder Wand"],2],
+["What must Dumbledore do to reach the fake Horcrux basin in the cave?",["Sacrifice a creature","Speak a Parseltongue incantation","Offer his blood to the lake","Drink all of the potion in the basin, no matter how much it torments him"],3],
+["What protection makes Privet Drive safe for Harry, and what condition must be met each year?",["A Ministry-applied security charm — renewed annually by the Minister","Dumbledore's personal ward — renewed by his visits","The enchantment from Lily's sacrifice — renewed by Harry calling it home each year, while Petunia (blood relative) lives there","A Fidelius Charm placed by James Potter — permanent"],2],
+["What is Voldemort's ideology's slogan as displayed on Ministry of Magic posters under his regime?",["'Death to Mudbloods'","'For the Greater Good'","'Purity Above All'","'Magic is Might'"],3],
+["What does the term 'Master of Death' mean according to Xenophilius Lovegood?",["Surviving the Killing Curse three times","Defeating Death in a duel","Possessing all three Deathly Hallows","Destroying every Horcrux"],2],
+["What real name is Moaning Myrtle known by (her surname, as revealed later in the series)?",["Warren","Fletcher","Moon","Turner"],0],
+["Which murder did Voldemort use to turn Nagini into a Horcrux, according to Dumbledore's theory?",["Frank Bryce","Cedric Diggory","An Albanian peasant","Bertha Jorkins"],3],
+["What was Regulus Black's original mission that led him to betray Voldemort?",["Dumbledore recruited him as a spy","He was sent to offer himself in Kreacher's place to test the cave's defences — and discovered Voldemort's secret","He overheard Voldemort's plans and was horrified","He stole secret documents from the Ministry"],1],
+["What happened to Ariana Dumbledore, according to Aberforth's account?",["Voldemort killed her","She killed herself","Ministry Aurors killed her","She was caught in a three-way duel between Albus, Aberforth and Grindelwald; who cast the fatal curse is unknown"],3],
+["What is the specific incantation used to produce the Shield Charm?",["Defensio","Impedimenta","Scutum","Protego"],3],
+["What does the enchanted ceiling of the Great Hall depict, and who cast the original enchantment?",["The planets — cast by Rowena Ravenclaw","A painted sky that never changes — cast by Merlin","The real sky outside — originally enchanted by Rowena Ravenclaw according to Hermione","Stars only — cast by Helga Hufflepuff"],2],
+["What is the core of Hermione Granger's wand?",["Vine wood, unicorn hair","Vine wood, phoenix feather","Vine wood, dragon heartstring","Willow, dragon heartstring"],2],
+["What does the Deluminator (left to Ron) do beyond simply removing and restoring lights?",["It allows Ron to listen to conversations at a distance","It can also transport Ron to wherever Hermione and Harry are when he hears their voices","It can detect Dark Magic nearby","It provides a compass pointing toward friends"],1],
+["What is the exact incantation used to call objects to you?",["Summarius","Veni","Accio","Venio"],2],
+["What form of magical travel did Voldemort and the Death Eaters uniquely master, described as 'flying' without a broomstick?",["Advanced Apparition","Legilimens flight","There is no named spell — it is described as a dark smoke-like flight without a broom, unique to Voldemort and later taught to Death Eaters","Portkey self-creation"],2],
+["What is the name of Dumbledore's phoenix?",["Feathers","Phoenix","Blaze","Fawkes"],3],
+["Where does the final duel between Harry and Voldemort take place in Deathly Hallows?",["The Astronomy Tower","The Forbidden Forest","The Chamber of Secrets","The Great Hall"],3],
+["What does Harry see in the King's Cross-like limbo after Voldemort's Killing Curse hits him in the forest?",["Nothing — he is simply unconscious","His parents waiting for him","A small, flayed creature beneath a seat — a fragment of Voldemort's soul — and Dumbledore","A vision of his own life played back to him"],2],
+["What enchantment do Fred and George Weasley use to try to cross the Age Line, and what happens?",["They use Polyjuice Potion but turn into Dumbledore — and are expelled","They use an Ageing Potion but sprout long white beards and are bounced out of the circle","They bribe a prefect and are caught immediately","They cross successfully but their names are rejected by the Goblet"],1],
+]
+];
+
+function startLevel(n){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('level'+n).classList.add('active');
+  const form=document.getElementById('q'+n);
+  if(form.innerHTML!=='') return;
+  document.getElementById('p'+n).textContent='50 questions — score 48/50 to advance';
+  levels[n].forEach((item,i)=>{
+    const[q,opts,c]=item;
+    const div=document.createElement('div');
+    div.className='q';
+    let html=`<p>${i+1}. ${q}</p>`;
+    opts.forEach((o,j)=>{
+      html+=`<label class="opt" id="opt${n}_${i}_${j}"><input type="radio" name="q${n}_${i}" value="${j}"> ${o}</label>`;
+    });
+    div.innerHTML=html;
+    form.appendChild(div);
+  });
+  window.scrollTo(0,0);
+}
+
+function grade(n){
+  let score=0;
+  levels[n].forEach((item,i)=>{
+    const correct=item[2];
+    const sel=document.querySelector(`input[name="q${n}_${i}"]:checked`);
+    const v=sel?parseInt(sel.value):-1;
+    if(v===correct) score++;
+    item[1].forEach((_,j)=>{
+      const lbl=document.getElementById(`opt${n}_${i}_${j}`);
+      lbl.classList.remove('correct','incorrect');
+      if(j===correct) lbl.classList.add('correct');
+      else if(j===v) lbl.classList.add('incorrect');
+    });
+    // disable after grading
+    document.querySelectorAll(`input[name="q${n}_${i}"]`).forEach(r=>r.disabled=true);
+  });
+
+  const pass=score>=48;
+  const rb=document.getElementById('r'+n);
+  rb.style.display='block';
+  rb.innerHTML=`
+    <div class="score">${score} / 50</div>
+    <p class="${pass?'pass':'fail'}" style="font-size:1.2em;margin:8px 0">
+      ${pass?'✅ Passed!':'❌ Not quite — you need 48/50 to advance.'}
+    </p>
+    <p style="color:#aaa">Correct answers are highlighted green. ${pass&&n<2?'Scroll up to continue to the next level.':''}</p>
+    ${pass&&n<2?`<button class="btn" onclick="startLevel(${n+1})">Continue to Level ${n+2}</button>`:''}
+    ${pass&&n===2?`<button class="btn" onclick="showComplete()">See Final Result</button>`:''}
+    ${!pass?`<button class="btn" onclick="retryLevel(${n})">Try Again</button>`:''}
+  `;
+  rb.scrollIntoView({behavior:'smooth'});
+  document.querySelector(`#level${n} .btn`).style.display='none';
+}
+
+function retryLevel(n){
+  const form=document.getElementById('q'+n);
+  form.innerHTML='';
+  document.getElementById('r'+n).style.display='none';
+  document.querySelector(`#level${n} .btn`).style.display='block';
+  startLevel(n);
+}
+
+function showComplete(){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('complete').classList.add('active');
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
