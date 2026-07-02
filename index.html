@@ -4,90 +4,265 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Harry Potter Quiz — All 7 Books</title>
+<link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:Georgia,serif;background:#1a1a2e;color:#eee;padding:20px}
-  .screen{max-width:720px;margin:0 auto;display:none}
+
+  body{
+    font-family:'Crimson Text',Georgia,serif;
+    background:#0a0a1a;
+    color:#e8e0d0;
+    padding:20px;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+
+  /* ── Starfield canvas ── */
+  #stars{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+
+  /* ── Layout ── */
+  .screen{max-width:740px;margin:0 auto;display:none;position:relative;z-index:1}
   .screen.active{display:block}
-  h1{color:#d4af37;text-align:center;font-size:1.8em;margin-bottom:6px}
-  .subtitle{text-align:center;color:#aaa;font-style:italic;margin-bottom:24px}
-  .level-badge{display:inline-block;padding:4px 14px;border-radius:20px;font-size:.85em;font-weight:bold;margin-bottom:16px}
-  .l1 .level-badge{background:#2e7d32}
-  .l2 .level-badge{background:#e65100}
-  .l3 .level-badge{background:#880e4f}
-  .q{background:#16213e;margin:14px 0;padding:14px;border-radius:8px;border-left:4px solid #d4af37}
-  .q p{font-weight:bold;margin-bottom:10px;line-height:1.4}
-  .opt{display:block;margin:5px 0;padding:8px 10px;border-radius:4px;cursor:pointer;transition:background .15s;line-height:1.4}
-  .opt:hover{background:#0f3460}
-  .opt input{margin-right:8px}
-  .correct{background:#2e7d32!important}
-  .incorrect{background:#c62828!important}
-  .btn{display:block;margin:24px auto 0;padding:12px 32px;font-size:1em;background:#d4af37;color:#1a1a2e;font-weight:bold;border:none;border-radius:6px;cursor:pointer}
-  .btn:hover{background:#c9a227}
-  .result-box{text-align:center;padding:30px 20px}
-  .result-box .score{font-size:2.5em;color:#d4af37;margin:16px 0}
-  .result-box p{color:#ccc;margin:8px 0}
-  .pass{color:#7cb342}
+
+  /* ── Typography ── */
+  h1{
+    font-family:'Cinzel',serif;
+    color:#d4af37;
+    text-align:center;
+    font-size:2em;
+    margin-bottom:6px;
+    text-shadow:0 0 20px rgba(212,175,55,.5),0 0 40px rgba(212,175,55,.2);
+    letter-spacing:2px;
+  }
+  .subtitle{text-align:center;color:#9b8ea0;font-style:italic;margin-bottom:24px;font-size:1.05em}
+
+  /* ── Level badge ── */
+  .level-badge{
+    display:inline-block;
+    padding:5px 18px;
+    border-radius:20px;
+    font-family:'Cinzel',serif;
+    font-size:.8em;
+    font-weight:700;
+    margin-bottom:18px;
+    letter-spacing:1px;
+    border:1px solid rgba(255,255,255,.15);
+  }
+  .l1 .level-badge{background:linear-gradient(135deg,#1b5e20,#2e7d32);box-shadow:0 0 12px rgba(46,125,50,.4)}
+  .l2 .level-badge{background:linear-gradient(135deg,#bf360c,#e65100);box-shadow:0 0 12px rgba(230,81,0,.4)}
+  .l3 .level-badge{background:linear-gradient(135deg,#4a0030,#880e4f);box-shadow:0 0 12px rgba(136,14,79,.4)}
+
+  /* ── Question cards ── */
+  .q{
+    background:linear-gradient(135deg,rgba(22,20,48,.95),rgba(14,12,36,.98));
+    margin:16px 0;
+    padding:18px 20px;
+    border-radius:10px;
+    border:1px solid rgba(212,175,55,.25);
+    border-left:4px solid #d4af37;
+    box-shadow:0 4px 20px rgba(0,0,0,.5),inset 0 1px 0 rgba(212,175,55,.08);
+    transition:border-color .2s;
+  }
+  .q:hover{border-color:rgba(212,175,55,.5)}
+  .q p{
+    font-weight:600;
+    margin-bottom:12px;
+    line-height:1.5;
+    color:#f0e8d8;
+    font-size:1.05em;
+  }
+
+  /* ── Options ── */
+  .opt{
+    display:block;
+    margin:6px 0;
+    padding:9px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    transition:background .15s,border-color .15s,transform .1s;
+    line-height:1.4;
+    border:1px solid transparent;
+    color:#ccc4b8;
+  }
+  .opt:hover{
+    background:rgba(212,175,55,.1);
+    border-color:rgba(212,175,55,.3);
+    color:#f0e8d8;
+    transform:translateX(3px);
+  }
+  .opt input{margin-right:10px;accent-color:#d4af37}
+  .correct{background:rgba(46,125,50,.35)!important;border-color:#4caf50!important;color:#a5d6a7!important}
+  .incorrect{background:rgba(198,40,40,.3)!important;border-color:#ef5350!important;color:#ef9a9a!important}
+
+  /* ── Buttons ── */
+  .btn{
+    display:block;
+    margin:28px auto 0;
+    padding:13px 36px;
+    font-family:'Cinzel',serif;
+    font-size:.95em;
+    font-weight:700;
+    letter-spacing:1px;
+    background:linear-gradient(135deg,#c9a227,#d4af37,#b8941f);
+    color:#1a1400;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    box-shadow:0 4px 16px rgba(212,175,55,.4),0 0 0 1px rgba(212,175,55,.3);
+    transition:transform .15s,box-shadow .15s;
+  }
+  .btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 6px 24px rgba(212,175,55,.55),0 0 0 1px rgba(212,175,55,.5);
+  }
+  .btn:active{transform:translateY(0)}
+
+  /* ── Result box ── */
+  .result-box{text-align:center;padding:36px 20px}
+  .result-box .score{
+    font-family:'Cinzel',serif;
+    font-size:3em;
+    color:#d4af37;
+    margin:16px 0;
+    text-shadow:0 0 30px rgba(212,175,55,.6);
+  }
+  .result-box p{color:#b0a898;margin:10px 0;font-size:1.05em}
+  .pass{color:#81c784}
   .fail{color:#ef5350}
-  #intro{text-align:center;padding:40px 20px}
-  #intro h1{font-size:2.2em;margin-bottom:10px}
-  #intro .rules{background:#16213e;border-radius:10px;padding:20px;margin:24px 0;text-align:left}
-  #intro .rules li{margin:8px 0;line-height:1.6}
-  .progress{text-align:right;color:#aaa;font-size:.85em;margin-bottom:4px}
+
+  /* ── Intro screen ── */
+  #intro{text-align:center;padding:50px 20px 40px}
+  #intro h1{font-size:2.6em;margin-bottom:8px}
+  .crest{font-size:3.5em;margin-bottom:16px;display:block;filter:drop-shadow(0 0 12px rgba(212,175,55,.5))}
+  #intro .rules{
+    background:linear-gradient(135deg,rgba(22,20,48,.9),rgba(14,12,36,.95));
+    border:1px solid rgba(212,175,55,.25);
+    border-radius:12px;
+    padding:24px 28px;
+    margin:28px 0;
+    text-align:left;
+  }
+  #intro .rules li{margin:10px 0;line-height:1.7;color:#c8bfb0}
+  #intro .rules li strong{color:#d4af37}
+
+  /* ── Progress ── */
+  .progress{
+    text-align:right;
+    color:#7a7070;
+    font-size:.85em;
+    margin-bottom:6px;
+    font-style:italic;
+  }
+
+  /* ── Divider ── */
+  .wand-divider{
+    text-align:center;
+    color:#d4af37;
+    opacity:.4;
+    font-size:1.2em;
+    margin:8px 0;
+    letter-spacing:6px;
+  }
+
+  /* ── Complete screen ── */
+  #complete .result-box{padding:60px 20px}
+  #complete h1{font-size:2.2em}
+  .fireworks{font-size:2.5em;letter-spacing:8px;margin:20px 0}
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar{width:6px}
+  ::-webkit-scrollbar-track{background:#0a0a1a}
+  ::-webkit-scrollbar-thumb{background:#3a3060;border-radius:3px}
 </style>
 </head>
 <body>
+<canvas id="stars"></canvas>
+<script>
+// Starfield
+(function(){
+  const c=document.getElementById('stars'),ctx=c.getContext('2d');
+  let stars=[];
+  function resize(){c.width=window.innerWidth;c.height=window.innerHeight}
+  function init(){
+    stars=[];
+    for(let i=0;i<160;i++) stars.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.4+.2,a:Math.random(),da:(Math.random()-.5)*.005});
+  }
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    stars.forEach(s=>{
+      s.a=Math.max(.05,Math.min(1,s.a+s.da));
+      if(s.a<=.05||s.a>=1) s.da*=-1;
+      ctx.beginPath();
+      ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(212,200,180,${s.a})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  resize();init();draw();
+  window.addEventListener('resize',()=>{resize();init()});
+})();
+</script>
 
 <div id="intro" class="screen active">
-  <h1>⚡ Harry Potter Quiz ⚡</h1>
-  <p class="subtitle">All Seven Books · Three Levels · 50 Questions Each</p>
+  <span class="crest">⚡🦅🦁🦡🐍⚡</span>
+  <h1>Harry Potter Quiz</h1>
+  <p class="subtitle">All Seven Books &nbsp;·&nbsp; Three Levels &nbsp;·&nbsp; 50 Questions Each</p>
+  <div class="wand-divider">· ✦ · ✦ · ✦ ·</div>
   <div class="rules">
     <ul style="padding-left:18px">
-      <li>Three levels: <strong>Easy → Medium → Hard</strong></li>
-      <li>You must score <strong>48 out of 50</strong> to unlock the next level</li>
-      <li>All questions are based on the <strong>books</strong>, not the films</li>
-      <li>Answers are revealed after you submit — no cheating!</li>
+      <li>🧙 Three levels: <strong>Easy → Medium → Hard</strong></li>
+      <li>⚡ Score <strong>48 out of 50</strong> to unlock the next level</li>
+      <li>📚 All questions are from the <strong>books</strong>, not the films</li>
+      <li>🔮 Correct answers are revealed after you submit</li>
     </ul>
   </div>
-  <button class="btn" onclick="startLevel(0)">Start Level 1 — Easy</button>
+  <div class="wand-divider">· ✦ · ✦ · ✦ ·</div>
+  <button class="btn" onclick="startLevel(0)">🪄 Begin the Challenge</button>
 </div>
 
 <div id="level0" class="screen l1">
-  <h1>⚡ Harry Potter Quiz ⚡</h1>
-  <span class="level-badge">Level 1 — Easy</span>
-  <p class="subtitle">Books 1–7 · The Basics</p>
+  <h1>Harry Potter Quiz</h1>
+  <span class="level-badge">🌿 Level 1 — Easy</span>
+  <p class="subtitle">Books 1–7 &nbsp;·&nbsp; The Basics</p>
+  <div class="wand-divider">· ✦ · ✦ · ✦ ·</div>
   <div class="progress" id="p0"></div>
   <form id="q0"></form>
-  <button class="btn" onclick="grade(0)">Submit Answers</button>
+  <button class="btn" onclick="grade(0)">🪄 Submit Answers</button>
   <div id="r0" class="result-box" style="display:none"></div>
 </div>
 
 <div id="level1" class="screen l2">
-  <h1>⚡ Harry Potter Quiz ⚡</h1>
-  <span class="level-badge">Level 2 — Medium</span>
-  <p class="subtitle">Books 1–7 · Getting Trickier</p>
+  <h1>Harry Potter Quiz</h1>
+  <span class="level-badge">🔥 Level 2 — Medium</span>
+  <p class="subtitle">Books 1–7 &nbsp;·&nbsp; Getting Trickier</p>
+  <div class="wand-divider">· ✦ · ✦ · ✦ ·</div>
   <div class="progress" id="p1"></div>
   <form id="q1"></form>
-  <button class="btn" onclick="grade(1)">Submit Answers</button>
+  <button class="btn" onclick="grade(1)">🪄 Submit Answers</button>
   <div id="r1" class="result-box" style="display:none"></div>
 </div>
 
 <div id="level2" class="screen l3">
-  <h1>⚡ Harry Potter Quiz ⚡</h1>
-  <span class="level-badge">Level 3 — Hard</span>
-  <p class="subtitle">Books 1–7 · For True Fans Only</p>
+  <h1>Harry Potter Quiz</h1>
+  <span class="level-badge">💀 Level 3 — Hard</span>
+  <p class="subtitle">Books 1–7 &nbsp;·&nbsp; For True Fans Only</p>
+  <div class="wand-divider">· ✦ · ✦ · ✦ ·</div>
   <div class="progress" id="p2"></div>
   <form id="q2"></form>
-  <button class="btn" onclick="grade(2)">Submit Answers</button>
+  <button class="btn" onclick="grade(2)">🪄 Submit Answers</button>
   <div id="r2" class="result-box" style="display:none"></div>
 </div>
 
 <div id="complete" class="screen">
   <div class="result-box">
-    <h1>⚡ Quiz Complete! ⚡</h1>
-    <p class="score" style="font-size:1.4em">You conquered all three levels.</p>
-    <p style="color:#d4af37;margin-top:20px;font-size:1.1em">A true Potterhead. Dumbledore would be proud.</p>
-    <button class="btn" onclick="location.reload()">Play Again</button>
+    <div class="fireworks">✨ 🌟 ⚡ 🌟 ✨</div>
+    <h1>You Did It!</h1>
+    <p class="score" style="font-size:1.3em;margin:20px 0">All Three Levels Conquered</p>
+    <div class="wand-divider" style="opacity:.6;margin:16px 0">· ✦ · ✦ · ✦ ·</div>
+    <p style="color:#d4af37;font-size:1.15em;font-style:italic">"It is our choices that show what we truly are."</p>
+    <p style="color:#7a7070;font-size:.9em;margin-top:6px">— Albus Dumbledore</p>
+    <button class="btn" style="margin-top:32px" onclick="location.reload()">🪄 Play Again</button>
   </div>
 </div>
 
