@@ -430,16 +430,21 @@ const levels = [
 ]
 ];
 
+// tracks which questions are locked (answered correctly)
+const locked = [[],[],[]];
+
 function startLevel(n){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('level'+n).classList.add('active');
   const form=document.getElementById('q'+n);
-  if(form.innerHTML!=='') return;
+  if(form.innerHTML!=='') { window.scrollTo(0,0); return; }
+  locked[n] = new Array(levels[n].length).fill(false);
   document.getElementById('p'+n).textContent='50 questions — score 48/50 to advance';
   levels[n].forEach((item,i)=>{
     const[q,opts,c]=item;
     const div=document.createElement('div');
     div.className='q';
+    div.id=`qcard${n}_${i}`;
     let html=`<p>${i+1}. ${q}</p>`;
     opts.forEach((o,j)=>{
       html+=`<label class="opt" id="opt${n}_${i}_${j}"><input type="radio" name="q${n}_${i}" value="${j}"> ${o}</label>`;
@@ -452,44 +457,61 @@ function startLevel(n){
 
 function grade(n){
   let score=0;
+  let wrong=0;
+
   levels[n].forEach((item,i)=>{
+    if(locked[n][i]){ score++; return; } // already correct — skip
+
     const correct=item[2];
     const sel=document.querySelector(`input[name="q${n}_${i}"]:checked`);
     const v=sel?parseInt(sel.value):-1;
-    if(v===correct) score++;
+
+    // clear previous state on unlocked options
     item[1].forEach((_,j)=>{
-      const lbl=document.getElementById(`opt${n}_${i}_${j}`);
-      lbl.classList.remove('correct','incorrect');
-      if(j===correct) lbl.classList.add('correct');
-      else if(j===v) lbl.classList.add('incorrect');
+      document.getElementById(`opt${n}_${i}_${j}`).classList.remove('correct','incorrect');
     });
-    // disable after grading
-    document.querySelectorAll(`input[name="q${n}_${i}"]`).forEach(r=>r.disabled=true);
+
+    if(v===correct){
+      // ✅ correct — lock it, show green
+      locked[n][i]=true;
+      score++;
+      item[1].forEach((_,j)=>{
+        const lbl=document.getElementById(`opt${n}_${i}_${j}`);
+        if(j===correct) lbl.classList.add('correct');
+      });
+      document.querySelectorAll(`input[name="q${n}_${i}"]`).forEach(r=>r.disabled=true);
+      document.getElementById(`qcard${n}_${i}`).style.opacity='0.6';
+    } else {
+      // ❌ wrong — show red on their pick ONLY, keep unlocked, no green reveal
+      wrong++;
+      if(v!==-1) document.getElementById(`opt${n}_${i}_${v}`).classList.add('incorrect');
+      // clear the wrong selection so they must pick again
+      if(sel) sel.checked=false;
+    }
   });
 
   const pass=score>=48;
   const rb=document.getElementById('r'+n);
   rb.style.display='block';
-  rb.innerHTML=`
-    <div class="score">${score} / 50</div>
-    <p class="${pass?'pass':'fail'}" style="font-size:1.2em;margin:8px 0">
-      ${pass?'✅ Passed!':'❌ Not quite — you need 48/50 to advance.'}
-    </p>
-    <p style="color:#aaa">Correct answers are highlighted green. ${pass&&n<2?'Scroll up to continue to the next level.':''}</p>
-    ${pass&&n<2?`<button class="btn" onclick="startLevel(${n+1})">Continue to Level ${n+2}</button>`:''}
-    ${pass&&n===2?`<button class="btn" onclick="showComplete()">See Final Result</button>`:''}
-    ${!pass?`<button class="btn" onclick="retryLevel(${n})">Try Again</button>`:''}
-  `;
-  rb.scrollIntoView({behavior:'smooth'});
-  document.querySelector(`#level${n} .btn`).style.display='none';
-}
 
-function retryLevel(n){
-  const form=document.getElementById('q'+n);
-  form.innerHTML='';
-  document.getElementById('r'+n).style.display='none';
-  document.querySelector(`#level${n} .btn`).style.display='block';
-  startLevel(n);
+  if(pass){
+    rb.innerHTML=`
+      <div class="score">${score} / 50</div>
+      <p class="pass" style="font-size:1.2em;margin:8px 0">✅ Passed!</p>
+      ${n<2?`<button class="btn" onclick="startLevel(${n+1})">🪄 Continue to Level ${n+2}</button>`
+           :`<button class="btn" onclick="showComplete()">🌟 See Final Result</button>`}
+    `;
+    document.querySelector(`#level${n} .btn`).style.display='none';
+  } else {
+    rb.innerHTML=`
+      <div class="score">${score} / 50</div>
+      <p class="fail" style="font-size:1.1em;margin:8px 0">
+        ${wrong} question${wrong!==1?'s':''} wrong — scroll up, correct them and try again
+      </p>
+      <p style="color:#7a7070;font-size:.9em">Wrong answers have been cleared so you can try again</p>
+    `;
+  }
+  rb.scrollIntoView({behavior:'smooth'});
 }
 
 function showComplete(){
